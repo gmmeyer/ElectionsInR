@@ -49,7 +49,7 @@ ElectoralDistribution = function(numberofdistricts,
     return(state)
 }
 
-MultipleSims <- function(numberoftimes, numberofdistricts, ... ) {
+MultipleDistributions <- function(numberoftimes, numberofdistricts, ... ) {
 
 	sim.results <- matrix(data = NA, nrow = numberoftimes, 
 						  ncol = numberofdistricts)
