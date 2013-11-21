@@ -3,7 +3,6 @@
 #if(doInstall){install.packages(toInstall, repos = "http://cran.r-project.org")}
 #lapply(toInstall, library, character.only = TRUE)
 
-require(grDevices)
 require(MASS)
 require(ggplot2)
 require(RColorBrewer)
