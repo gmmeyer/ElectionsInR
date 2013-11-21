@@ -10,11 +10,11 @@ require(RColorBrewer)
 
 set.seed(1)
 
-ElectoralDistribution = function(numberofdistricts, 
+ElectoralDistribution1 = function(numberofdistricts, 
                                  gerrymandering = FALSE,
                                  howunfair = 'null', #add this later
-                                 demdistricts = c(1:2)
-                                 repdistricts = c(3:numberofdistricts)
+                                 demdistricts = c(1:2),
+                                 repdistricts = c(3:numberofdistricts),
                                  peopleperdistrict = 70000,
                                  includeindependents = FALSE, #addthislater
                                  partyalignment = c(.5,.5)) {
@@ -34,17 +34,22 @@ ElectoralDistribution = function(numberofdistricts,
     		state[district] <- sample(c(-1,1), size = peopleperdistrict, 
     							      replace = T, prob = c(.4,.6))
     	}
+    	
+    	offsetrestofstate = (.1 * length(demdistricts))/length(repdistricts)
+    	demrestofstate = .5 - offsetrestofstate
+    	represtofstate = .5 + offsetrestofstate
+    	
+    	
     	for(district in repdistricts){
     		state[district] <- sample(c(-1,1), size = peopleperdistrict,
-    								  replace = T, prob = c(.6,.4)
+    								  replace = T, prob = c(represtofstate, 
+    								  demrestofstate))
     	}
     }
     
     if(gerrymandering == TRUE && howunfair != 'null'){
     #enable this later
     }
-        
-        
 
     return(state)
 }
