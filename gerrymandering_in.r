@@ -11,7 +11,7 @@ set.seed(1)
 
 ElectoralDistribution = function(numberofdistricts, 
                                  gerrymandering = FALSE,
-                                 howunfair = 'null', #add this later
+                                 howunfair = c(.4, .6), #add this later
                                  demdistricts = c(1:2),
                                  repdistricts = c(3:numberofdistricts),
                                  peopleperdistrict = 70000,
@@ -20,7 +20,6 @@ ElectoralDistribution = function(numberofdistricts,
 
     state <- rep(0, numberofdistricts)
     population = numberofdistricts * peopleperdistrict
-    people = NA
     
     if(gerrymandering == FALSE){
    		for(district in 1:numberofdistricts){
@@ -30,9 +29,9 @@ ElectoralDistribution = function(numberofdistricts,
     }
     
     if(gerrymandering == TRUE){
-    	for(district in demdistricts){ #democratic districts
+    	for(district in demdistricts){               #democratic districts
     		state[district] <- sum(sample(c(-1,1), size = peopleperdistrict, 
-    							      replace = T, prob = c(.4,.6)))
+    							      replace = T, prob = howunfair))
     	}
     	
     	offsetrestofstate = (.1 * length(demdistricts))/length(repdistricts)
@@ -40,16 +39,29 @@ ElectoralDistribution = function(numberofdistricts,
     	represtofstate = .5 + offsetrestofstate
     	
     	
-    	for(district in repdistricts){
+    	for(district in repdistricts){		         #republican districts
     		state[district] <- sum(sample(c(-1,1), size = peopleperdistrict,
     								  replace = T, prob = c(represtofstate, 
     								  demrestofstate)))
     	}
     }
-    
-    if(gerrymandering == TRUE && howunfair != 'null'){
-    #enable this later
-    }
 
     return(state)
 }
+
+MultipleSims <- function(numberoftimes, numberofdistricts, ... ) {
+
+	sim.results <- matrix(data = NA, nrow = numberoftimes, 
+						  ncol = numberofdistricts)
+
+	for(i in 1:numberoftimes){
+	
+		sim.results[i,] <- ElectoralDistribution(numberofdistricts, ... )
+		
+	}
+	
+	return(sim.results)
+
+}
+
+
