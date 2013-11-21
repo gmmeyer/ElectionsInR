@@ -1,13 +1,29 @@
+#Unsure if the necessary packages are installed in R for this script to run?
+#Or are you getting an error because they aren't?
+#Uncomment the below lines, it will install all the packages I've used in this script.
+
 #doInstall <- TRUE  # Change to FALSE if you don't want packages installed.
-#toInstall <- c("maps", "ggplot2", "RColorBrewer", "MASS", "colorspace")
+#toInstall <- c("ggplot2", "RColorBrewer", "colorspace")
 #if(doInstall){install.packages(toInstall, repos = "http://cran.r-project.org")}
 #lapply(toInstall, library, character.only = TRUE)
 
-require(MASS)
 require(ggplot2)
 require(RColorBrewer)
 
 set.seed(1)
+
+#First we'll start by defining a few functions.
+#Argument notes: numberofdistricts is the number of districts in the fictional state you're creating
+#gerrymandering can be turned on or off with the true or false, default is off
+#how unfair is only relevant if you're using gerrymandering, you can change it if you're not
+#it just won't do anything
+#demdistricts and rep districts merely defines how many districts are of each. make sure the variables
+#line up to numberofdistricts or you'll get some districts with 0's in them
+#originally I had made peopleperdistrict to be less than 700000, but the simulation runs fast enough
+#with 700000 that I figured I'd just bump it up there. if it doesn't run fast enough for you, bump it down
+
+#includeindependents and partyalignment are not yet implemented, I might not implement them.
+#they would make the simulation more complex, but I'm not sure I need it/am willing to do the work.
 
 ElectoralDistribution = function(numberofdistricts, 
                                  gerrymandering = FALSE,
@@ -18,8 +34,11 @@ ElectoralDistribution = function(numberofdistricts,
                                  includeindependents = FALSE, #addthislater (I probably won't)
                                  partyalignment = c(.5,.5)) {
 
+	#just two variables we'll need, the empty state variable saves some memory
     state <- rep(0, numberofdistricts)
     population = numberofdistricts * peopleperdistrict
+    
+    #results that aren't gerrymandered
     
     if(gerrymandering == FALSE){
    		for(district in 1:numberofdistricts){
@@ -28,18 +47,21 @@ ElectoralDistribution = function(numberofdistricts,
         }
     }
     
+    #gerrymandered results
+    
     if(gerrymandering == TRUE){
-    	for(district in demdistricts){               #democratic districts
+    	#democratic districts
+    	for(district in demdistricts){              
     		state[district] <- sum(sample(c(-1,1), size = peopleperdistrict, 
     							      replace = T, prob = howunfair))
     	}
     	
-    	offsetrestofstate = (.1 * length(demdistricts))/length(repdistricts)
-    	demrestofstate = .5 - offsetrestofstate
-    	represtofstate = .5 + offsetrestofstate
+		offsetrestofstate = (.1 * length(demdistricts))/length(repdistricts)
+		demrestofstate = .5 - offsetrestofstate
+		represtofstate = .5 + offsetrestofstate
     	
-    	
-    	for(district in repdistricts){		         #republican districts
+    	#republican districts
+    	for(district in repdistricts){
     		state[district] <- sum(sample(c(-1,1), size = peopleperdistrict,
     								  replace = T, prob = c(represtofstate, 
     								  demrestofstate)))
@@ -49,19 +71,44 @@ ElectoralDistribution = function(numberofdistricts,
     return(state)
 }
 
-MultipleDistribution <- function(numberoftimes, numberofdistricts, ... ) {
+#This will run the simulation multiple times. I passed all the arguments except for the one
+#that was needed for both functions to run onto the above function.
 
-	sim.results <- matrix(data = NA, nrow = numberoftimes, 
-						  ncol = numberofdistricts)
+MultipleDistribution <- function(numberoftimes, numberofdistricts, ... ) {
+	
+	#I created the matrix beforehand, saves on memory space.
+	
+	sim.results <- matrix(data = NA, ncol = numberoftimes, 
+						  nrow = numberofdistricts)
 
 	for(i in 1:numberoftimes){
-	
-		sim.results[i,] <- ElectoralDistribution(numberofdistricts, ... )
-		
+		sim.results[,i] <- ElectoralDistribution(numberofdistricts, ... )
 	}
 	
 	return(sim.results)
 
 }
+
+
+#Now, we'll run the simulation. And, we'll put the results into some graphs.
+run.names = rep(0, 30)
+district.names = rep(0, 20)
+
+for(i in 1:30){ run.names[i] = paste0('Run ',i) }
+for(i in 1:20){ district.names[i] = paste0('District ',i) }
+
+not.gerrymandered <- MultipleDistribution(30, 20)
+gerrymandered <- MultipleDistribution(30, 20, gerrymandering = T)
+less.gerrymandered <- MultipleDistribution(30, 20, gerrymandering = T, howunfair = c(.45,.55))
+
+not.gerrymandered.df <- data.frame(not.gerrymandered, row.names = district.names)
+names(not.gerrymandered.df) <- run.names
+gerrymandered.df <- data.frame(gerrymandered, row.names = district.names)
+names(gerrymandered.df) <- run.names
+less.gerrymandered.df <- data.frame(less.gerrymandered, row.names = district.names)
+names(less.gerrymanddered.df) <- run.names
+
+
+
 
 
