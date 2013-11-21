@@ -22,12 +22,12 @@ set.seed(1)
 #Because of the one man, one vote rule in the US, each district has to have
 #a roughly equal population. The average population per district is ~710,767
 #as per the last census. I am going to round this down to 700,000 for our
-#purposes here.
+#purposes here. 
 
 ElectoralDistribution = function(numberofdistricts, 
                                  gerrymandering = FALSE,
                                  howunfair = 'null', #add this later
-                                 peopleperdistrict = 700000,
+                                 peopleperdistrict = 70000,
                                  includeindependents = FALSE, #addthislater
                                  partyalignment = c(.5,.5)) {
     #I am initializing these two vectors. One of them shows the electoral
@@ -38,21 +38,43 @@ ElectoralDistribution = function(numberofdistricts,
     population = numberofdistricts * peopleperdistrict
     person = NA
     district = NA
+    districtsdown = 0
+    
+    if(gerrymandering == FALSE) {
+        districtprob = rep(1/numberofdistricts, numberofdistricts)
+    }
     
     #The way this works is pretty simple. Every passby of the loop will
     #create a random person then assign him to a district. Through  the use
-    #of the prob function
+    #of the prob function, we will ensure that the distribution of parties
+    #statewide is proper.
+    #Each Republican added to the district will be represented by a negative number.
+    #Each Democrat, a positive number.
     
-    while(sum(districtpopulation) <= population & gerrymandering = FALSE) {
+    #I will not assure in the ungerrymandered case that the distribution of parties
+    #is equal by district.
+    #That state would be very easy to create:  state <- rep(0, numberofdistricts).
+    #Instead, this is an experiment to see how easy it would be to randomly
+    #generate districts, and how easily the districts could be shifted towards
+    #one side or another.
+    
+    while(sum(districtpopulation) <= population & gerrymandering == FALSE) {
         person <- sample(c(-1,1), 1)
+        district <- sample(c(1:numberofdistricts),1, prob = districtprob, 
+                           Replace = TRUE)
+        
+        state[district] = state[district] + person
+        districtpopulation[district] = districtpopulation[district] + 1
+        
+        if(districtpopulation[district] == peopleperdistrict) {
+            districtprob[district] = 0
+            districtsdown = districtsdown + 1
+        }
     }
     
-    while(sum(districtpopulation) <= population & gerrymandering = TRUE) {
+    while(sum(districtpopulation) <= population & gerrymandering == TRUE) {
         person <- sample(c(-1,1), 1)
     }
-    
-    
+
+    return(state)
 }
-
-
-
