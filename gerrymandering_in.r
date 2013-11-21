@@ -11,10 +11,10 @@ set.seed(1)
 
 ElectoralDistribution = function(numberofdistricts, 
                                  gerrymandering = FALSE,
-                                 howunfair = c(.4, .6), #add this later
+                                 howunfair = c(.4, .6),
                                  demdistricts = c(1:2),
                                  repdistricts = c(3:numberofdistricts),
-                                 peopleperdistrict = 70000,
+                                 peopleperdistrict = 700000,
                                  includeindependents = FALSE, #addthislater
                                  partyalignment = c(.5,.5)) {
 
@@ -49,7 +49,7 @@ ElectoralDistribution = function(numberofdistricts,
     return(state)
 }
 
-MultipleDistributions <- function(numberoftimes, numberofdistricts, ... ) {
+MultipleDistribution <- function(numberoftimes, numberofdistricts, ... ) {
 
 	sim.results <- matrix(data = NA, nrow = numberoftimes, 
 						  ncol = numberofdistricts)
