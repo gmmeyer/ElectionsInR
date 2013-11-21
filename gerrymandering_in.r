@@ -1,5 +1,5 @@
 #doInstall <- TRUE  # Change to FALSE if you don't want packages installed.
-#toInstall <- c("maps", "ggplot2", "RColorBrewer", "MASS", 'colorspace')
+#toInstall <- c("maps", "ggplot2", "RColorBrewer", "MASS", "colorspace")
 #if(doInstall){install.packages(toInstall, repos = "http://cran.r-project.org")}
 #lapply(toInstall, library, character.only = TRUE)
 
@@ -15,7 +15,7 @@ ElectoralDistribution = function(numberofdistricts,
                                  demdistricts = c(1:2),
                                  repdistricts = c(3:numberofdistricts),
                                  peopleperdistrict = 700000,
-                                 includeindependents = FALSE, #addthislater
+                                 includeindependents = FALSE, #addthislater (I probably won't)
                                  partyalignment = c(.5,.5)) {
 
     state <- rep(0, numberofdistricts)
