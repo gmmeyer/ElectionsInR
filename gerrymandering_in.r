@@ -3,7 +3,7 @@
 #Uncomment the below lines, it will install all the packages I've used in this script.
 
 #doInstall <- TRUE  # Change to FALSE if you don't want packages installed.
-#toInstall <- c("ggplot2", "RColorBrewer", "colorspace")
+#toInstall <- c("ggplot2", "RColorBrewer", "colorspace", "gmp")
 #if(doInstall){install.packages(toInstall, repos = "http://cran.r-project.org")}
 #lapply(toInstall, library, character.only = TRUE)
 
@@ -88,3 +88,16 @@ MultipleDistribution <- function(numberoftimes, numberofdistricts, ... ) {
 	return(sim.results)
 
 }
+
+automap <- function(number.of.districts){
+	if(number.of.districts %% 2 == 0){
+		return(rep(number.of.districts/2,2))
+	} else {
+		return(rep(number.of.districts/2-.5, number.of.districts/2+.5))
+	}
+} 
+
+#This function will make the graphs of the simulation. 
+#remember, the layout is this: simulation[district,run]
+
+

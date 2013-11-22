@@ -1,16 +1,3 @@
-#Unsure if the necessary packages are installed in R for this script to run?
-#Or are you getting an error because they aren't?
-#Uncomment the below lines, it will install all the packages I've used in this script.
-
-#doInstall <- TRUE  # Change to FALSE if you don't want packages installed.
-#toInstall <- c("ggplot2", "RColorBrewer", "colorspace")
-#if(doInstall){install.packages(toInstall, repos = "http://cran.r-project.org")}
-#lapply(toInstall, library, character.only = TRUE)
-
-require(ggplot2)
-require(RColorBrewer)
-
-
 #Now, we'll run the simulation. And, we'll put the results into some graphs.
 run.names = rep(0, 30)
 district.names = rep(0, 20)
@@ -76,3 +63,5 @@ dev.off()
 system("convert -delay 30 *elections.png not.gerrymandered.gif")
 
 file.remove(list.files(pattern="elections.png"))
+
+
