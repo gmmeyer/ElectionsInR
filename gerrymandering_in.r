@@ -2,15 +2,34 @@
 #Or are you getting an error because they aren't?
 #Uncomment the below lines, it will install all the packages I've used in this script.
 
-#doInstall <- TRUE  # Change to FALSE if you don't want packages installed.
-#toInstall <- c("ggplot2", "RColorBrewer", "colorspace", "gmp")
+#doInstall <- TRUE  # Change to FALSE if you don't want packages installed, or just comment it out.
+#toInstall <- c("RColorBrewer", "colorspace")
 #if(doInstall){install.packages(toInstall, repos = "http://cran.r-project.org")}
 #lapply(toInstall, library, character.only = TRUE)
-
-require(ggplot2)
+#dir.create('graphs/', showWarnings = FALSE)
 require(RColorBrewer)
+require(grDevices)
+
+color.vector.1  <- colorRampPalette(brewer.pal(n = 11, name = 'RdBu'))(101)
 
 set.seed(1)
+
+#Here's the general idea. I wanted to make a bit of a toy simulation of gerrymandering in states.
+#So, basically, I just made random number generators to do the work, so as to be relatively fair.
+#It just flips a coin to determine who is what party in a district.
+#When I gerrymander, I distribute more heavily to some districts than to others and say, then we'll
+#just distribute the rest of the people randomly accross the other districts.
+
+#Mostly what I wanted was just a graphical display of an obvious statistical fact: when you gerrymander
+#all you need is to gerrymander a few districts. Because, if you distribute two districts with 60% of one party,
+#then the other districts will have that much less of that party. So, if the other districts aren't gerrymandered
+#and are just random, then they'll likely be noncompetitive. And that's what the graphs show.
+
+#Since the argument is purely statistical, this "simulation" doesn't really show anything. But I figured it's a cool
+#little thing to use for this article I'm writing about this, which makes that essential argument:
+#gerrymandering doesn't have to be very obvious or even all that insidious in order to have a big effect on a state.
+
+
 
 #First we'll start by defining a few functions.
 #Argument notes: numberofdistricts is the number of districts in the fictional state you're creating
@@ -89,15 +108,84 @@ MultipleDistribution <- function(numberoftimes, numberofdistricts, ... ) {
 
 }
 
-automap <- function(number.of.districts){
-	if(number.of.districts %% 2 == 0){
-		return(rep(number.of.districts/2,2))
-	} else {
-		return(rep(number.of.districts/2-.5, number.of.districts/2+.5))
-	}
-} 
-
-#This function will make the graphs of the simulation. 
+#These functions will make the graphs of the simulation. 
 #remember, the layout is this: simulation[district,run]
+#These are just so messy, graphs in R are unfortunately, annoyingly messy.
+
+GifBarPlot <- function(distribution, filename, runs, delay = 30){
+	png(file='%02dtempelections.png', width=800, height=400)
+		for(run in 1:runs){
+			district.names = rep(0, length(distribution[,run]))
+			for(i in 1:length(distribution[,run])){ district.names[i] = paste0('District ',i) }
+			
+			color.vector <- rep(NA, length(distribution[,run]))			
+			for(district in 1:length(distribution[,run])){
+				if(distribution[district,run] < 0){ 
+					color.vector[district] <- 'red'
+				} else if(distribution[district,run] > 0){
+					color.vector[district] <- 'blue'
+				} else{ 
+					color.vector[district] <- 'grey'
+				}
+			}
+			barplot(distribution[,run], col = color.vector, names.arg = district.names, border = 'black', ylim = c(min(distribution),max(distribution)))
+		}
+	dev.off()
+
+	system(paste0("convert -delay ",delay," *tempelections.png ",filename))
+	file.remove(list.files(pattern="tempelections.png"))
+	
+}
+
+GifHeatMap <- function(distribution, filename, rows, runs, delay = 30){
+	heat.breaks = seq(min(distribution),max(distribution), length.out = 102)
+	if(0 %in% heat.breaks != T){
+		heat.breaks = sort(c( seq(min(distribution), max(distribution), length.out = 101), 0))
+	}
+	
+	png(file='%02dtempelections.png', width=800, height=400)
+		for(run in 1:runs){
+
+		heatmap.matrix <- matrix(distribution[,run], nrow = rows)
+		heatmap.2(heatmap.matrix, col = color.vector.1, Rowv = NA, Colv = NA, labRow = NA, labCol = NA, 
+				  key=T, dendrogram="none", keysize=1.5, density.info="none", 
+				  trace="none", sepcolor = "black", breaks = heat.breaks)
+		}
+	dev.off()
+
+	system(paste0("convert -delay ",delay," *tempelections.png ",filename))
+	file.remove(list.files(pattern="tempelections.png"))
+}
+
+
+BarPlot <- function(distribution, filename){
+	png(file=filename, width=800, height=400)
+		district.names = rep(0, length(distribution))
+		for(i in 1:length(distribution)){ district.names[i] = paste0('District ',i) }
+	
+		color.vector <- rep(NA, length(distribution))			
+		for(district in 1:length(distribution)){
+			if(distribution[district] < 0){ 
+				color.vector[district] <- 'red'
+			} else if(distribution[district] > 0){
+				color.vector[district] <- 'blue'
+			} else{ 
+				color.vector[district] <- 'grey'
+			}
+		}
+	
+		barplot(distribution, col = color.vector, names.arg = district.names, border = 'black', ylim = c(min(distribution),max(distribution)))
+	dev.off()
+}
+
+HeatMap <- function(distribution, filename, rows){
+	png(file=filename, width=800, height=400)
+		heatmap.matrix <- matrix(distribution, nrow = rows)
+		heatmap.2(heatmap.matrix, col = color.vector.1, Rowv = NA, Colv = NA, labRow = NA, labCol = NA, 
+				  key=T, dendrogram="none", keysize=1.5, density.info="none", 
+				  trace="none", sepcolor = "black", breaks = heat.breaks)
+	dev.off()
+}
+
 
 
